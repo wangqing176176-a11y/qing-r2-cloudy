@@ -210,6 +210,10 @@ const Home: React.FC = () => {
   // 新增：提示信息 3 秒后自动消失，提升体验
   useEffect(() => {
     if (notice) {
+      // 如果是错误信息，不自动消失，方便调试
+      if (notice.includes("失败") || notice.includes("Error")) {
+        return;
+      }
       const timer = setTimeout(() => setNotice(null), 3000);
       return () => clearTimeout(timer);
     }
