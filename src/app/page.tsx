@@ -181,10 +181,19 @@ const Home: React.FC = () => {
   const fetchFiles = async () => {
     try {
       const res = await fetch("/api/files", { cache: "no-store" });
+      
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API请求失败: ${res.status} ${text.slice(0, 100)}`);
+      }
+
       const data = await res.json();
+      if (!Array.isArray(data)) {
+        throw new Error("返回数据格式错误，应为数组");
+      }
       setRootFiles(data);
-    } catch (err) {
-      setNotice("加载文件列表失败，请检查 R2 绑定配置。");
+    } catch (err: any) {
+      setNotice(`加载失败: ${err.message}`);
       console.error(err);
     }
   };
