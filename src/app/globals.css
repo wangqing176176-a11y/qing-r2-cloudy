@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-plex-sans);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-plex-sans), "Segoe UI", sans-serif;
+}
+
+:root {
+  --app-bg: #f3f6fb;
+  --panel-bg: #ffffff;
+  --preview-bg: #f1f5fb;
+  --border-color: #d7e0ee;
+  --text-primary: #1f2a44;
+  --text-muted: #6b7280;
+  --accent-strong: #2563eb;
+  --accent-strong-hover: #1e4fd2;
+  --accent-soft: #e6efff;
+  --hover-bg: #eff4ff;
+  --icon-bg: #eef3fb;
+  --pill-bg: #f3f6fb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg: #0f141d;
+    --panel-bg: #121a26;
+    --preview-bg: #0f141d;
+    --border-color: #1f2a3d;
+    --text-primary: #e5e7eb;
+    --text-muted: #9aa4b2;
+    --accent-strong: #3b82f6;
+    --accent-strong-hover: #2563eb;
+    --accent-soft: rgba(59, 130, 246, 0.2);
+    --hover-bg: #1a2332;
+    --icon-bg: #1a2332;
+    --pill-bg: #1a2332;
+  }
+}

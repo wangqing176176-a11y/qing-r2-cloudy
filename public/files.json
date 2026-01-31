@@ -1,0 +1,51 @@
+[
+  {
+    "name": "图片",
+    "type": "folder",
+    "lastModified": "2026-01-01T12:00:00Z",
+    "children": [
+      {
+        "name": "cat.jpg",
+        "url": "https://example-bucket.r2.dev/cat.jpg",
+        "type": "image/jpeg",
+        "size": 123456,
+        "lastModified": "2026-01-01T12:00:00Z"
+      },
+      {
+        "name": "dog.png",
+        "url": "https://example-bucket.r2.dev/dog.png",
+        "type": "image/png",
+        "size": 234567,
+        "lastModified": "2026-01-01T13:00:00Z"
+      }
+    ]
+  },
+  {
+    "name": "文档",
+    "type": "folder",
+    "lastModified": "2026-01-02T12:00:00Z",
+    "children": [
+      {
+        "name": "example.pdf",
+        "url": "https://example-bucket.r2.dev/example.pdf",
+        "type": "application/pdf",
+        "size": 512000,
+        "lastModified": "2026-01-02T12:00:00Z"
+      },
+      {
+        "name": "example.docx",
+        "url": "https://example-bucket.r2.dev/example.docx",
+        "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "size": 256000,
+        "lastModified": "2026-01-02T13:00:00Z"
+      }
+    ]
+  },
+  {
+    "name": "example-video.mp4",
+    "url": "https://example-bucket.r2.dev/example-video.mp4",
+    "type": "video/mp4",
+    "size": 2048000,
+    "lastModified": "2026-01-03T12:00:00Z"
+  }
+]
