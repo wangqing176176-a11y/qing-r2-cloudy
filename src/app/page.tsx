@@ -199,6 +199,7 @@ const Home: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const xhrRefs = useRef<Map<File, XMLHttpRequest>>(new Map());
 
   const fetchFiles = async () => {
     try {
@@ -324,6 +325,8 @@ const Home: React.FC = () => {
       // 2. 使用 XHR 上传以获取进度
       return new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        xhrRefs.current.set(file, xhr); // 保存 xhr 引用以便取消
+
         xhr.open("PUT", url);
         xhr.setRequestHeader("Content-Type", file.type);
 
@@ -337,6 +340,7 @@ const Home: React.FC = () => {
         };
 
         xhr.onload = () => {
+          xhrRefs.current.delete(file);
           if (xhr.status >= 200 && xhr.status < 300) {
             setUploadQueue(prev => prev.map(item => 
               item.file === file ? { ...item, status: "success", progress: 100 } : item
@@ -347,15 +351,32 @@ const Home: React.FC = () => {
           }
         };
 
-        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.onerror = () => {
+          xhrRefs.current.delete(file);
+          reject(new Error("网络错误 (请检查 R2 CORS 配置)"));
+        };
+
+        xhr.onabort = () => {
+          xhrRefs.current.delete(file);
+          reject(new Error("已取消"));
+        };
+
         xhr.send(file);
       });
     } catch (e: unknown) {
       console.error(e);
       const message = e instanceof Error ? e.message : String(e);
+      // 如果是取消，状态设为 error 但提示不同
       setUploadQueue(prev => prev.map(item => 
         item.file === file ? { ...item, status: "error", error: message } : item
       ));
+    }
+  };
+
+  const handleCancelUpload = (file: File) => {
+    const xhr = xhrRefs.current.get(file);
+    if (xhr) {
+      xhr.abort();
     }
   };
 
@@ -826,6 +847,15 @@ const Home: React.FC = () => {
                 <div className="flex-shrink-0">
                   {item.status === 'success' && <span className="text-green-500 text-xs">完成</span>}
                   {item.status === 'uploading' && <span className="text-blue-500 text-xs animate-pulse">上传中</span>}
+                  {item.status === 'uploading' && (
+                    <button 
+                      onClick={() => handleCancelUpload(item.file)}
+                      className="text-gray-400 hover:text-red-500 transition-colors ml-2"
+                      title="取消上传"
+                    >
+                      <CloseIcon className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
