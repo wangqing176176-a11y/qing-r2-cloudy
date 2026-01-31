@@ -14,10 +14,14 @@ type FileItem = {
 const getCustomUrl = (url?: string) => {
   if (!url) return "";
   try {
-    const urlObj = new URL(url);
-    // 替换 hostname 为 r2cloud.qinghub.top
-    return `https://r2cloud.qinghub.top${urlObj.pathname}${urlObj.search}`;
+    // 如果是完整 URL，尝试替换 hostname
+    const urlObj = new URL(url.startsWith("http") ? url : `https://r2cloud.qinghub.top${url}`);
+    return urlObj.toString();
   } catch (e) {
+    // 如果是相对路径，直接拼接
+    if (url.startsWith("/")) {
+      return `https://r2cloud.qinghub.top${url}`;
+    }
     return url;
   }
 };
