@@ -14,7 +14,7 @@ export default function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                WanQing&apos;s R2 Drive
+                WanQing's R2 Drive
               </Link>
             </div>
           </div>
@@ -45,7 +45,10 @@ export default function Navbar() {
               </svg>
               <span className="text-sm font-medium">电子邮件</span>
             </a>
-            <button className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105">
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent("trigger-upload"))}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105"
+            >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
@@ -112,8 +115,11 @@ export default function Navbar() {
             </a>
           </div>
           <div className="pt-4 pb-4 border-t border-gray-200 dark:border-gray-800">
-            <div className="flex items-center px-4">
-              <button className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <div className="flex items-center px-4" onClick={() => setIsMobileMenuOpen(false)}>
+              <button 
+                onClick={() => window.dispatchEvent(new CustomEvent("trigger-upload"))}
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
                 上传文件
               </button>
             </div>
