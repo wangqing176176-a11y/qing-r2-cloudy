@@ -235,12 +235,41 @@ const Home: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('r2_username');
+    if (storedUser) {
+      setLoggedIn(true);
+      setUsername(storedUser);
+    }
+  }, []);
+
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({
     key: 'lastModified',
     direction: 'desc' // 默认按时间倒序（最新在前）
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const xhrRefs = useRef<Map<string, XMLHttpRequest>>(new Map());
+
+  const handleLogin = () => {
+    // 简单的前端验证，账号密码均为 admin
+    if (username === "admin" && password === "admin") {
+      setLoggedIn(true);
+      setLoginError('');
+      if (rememberMe) {
+        localStorage.setItem('r2_username', username);
+      } else {
+        localStorage.removeItem('r2_username');
+      }
+    } else {
+      setLoginError('账号或密码错误，请重试');
+    }
+  };
 
   const fetchFiles = async () => {
     try {
@@ -935,6 +964,39 @@ const Home: React.FC = () => {
               </button>
             </div>
 
+            {!loggedIn ? (
+              <div className="p-8 flex flex-col gap-4 justify-center items-center">
+                <div className="w-full max-w-sm space-y-4">
+                  <h3 className="text-lg font-medium text-center text-gray-900 dark:text-white">请输入管理员账号密码</h3>
+                  {loginError && <p className="text-sm text-red-500 text-center">{loginError}</p>}
+                  <input 
+                    type="text" 
+                    placeholder="账号" 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                  <input 
+                    type="password" 
+                    placeholder="密码" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                  <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+                    <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
+                    记住密码
+                  </label>
+                  <button 
+                    onClick={handleLogin}
+                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    验证身份
+                  </button>
+                </div>
+              </div>
+            ) : (
+            <>
             {/* 拖拽区域 */}
             <div 
               className={`mx-6 mt-6 border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-colors ${
@@ -1019,6 +1081,8 @@ const Home: React.FC = () => {
                 </div>
               ))}
             </div>
+            </>
+            )}
           </div>
         </div>
       )}
