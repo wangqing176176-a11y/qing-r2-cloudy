@@ -7,15 +7,15 @@ export async function GET(request: NextRequest) {
   const { env } = getRequestContext();
   
   // 检查绑定是否存在
-  if (!env.R2_BUCKET) {
-    console.error('R2_BUCKET binding not found');
+  if (!env.BUCKET) {
+    console.error('BUCKET binding not found');
     // 返回空数组而不是报错，避免前端崩溃，方便调试
     return NextResponse.json([]); 
   }
 
   try {
     // 列出存储桶中的所有文件
-    const listed = await env.R2_BUCKET.list();
+    const listed = await env.BUCKET.list();
     
     // 将扁平的文件列表转换为树形结构 (Folder/File)
     const tree = buildTree(listed.objects);
