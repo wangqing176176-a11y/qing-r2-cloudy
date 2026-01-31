@@ -21,6 +21,14 @@ export default function Navbar() {
 
           {/* 右侧功能区 */}
           <div className="hidden sm:flex items-center space-x-4">
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent("navigate-home"))}
+              className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
+              title="回到首页"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+              <span className="text-sm font-medium">首页</span>
+            </button>
             <a href="https://qinghub.top" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="我的博客">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -82,6 +90,15 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="sm:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="pt-2 pb-3 space-y-1">
+            <button
+              className="w-full text-left border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("navigate-home"));
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              首页
+            </button>
             <a
               href="https://qinghub.top"
               target="_blank" rel="noopener noreferrer"

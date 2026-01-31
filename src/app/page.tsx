@@ -179,6 +179,12 @@ const UploadIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SortIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+  </svg>
+);
+
 const PauseIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
@@ -213,6 +219,9 @@ type UploadItem = {
   error?: string;
 };
 
+type SortKey = 'name' | 'size' | 'lastModified';
+type SortDirection = 'asc' | 'desc';
+
 const Home: React.FC = () => {
   const [rootFiles, setRootFiles] = useState<FileItem[]>([]);
   const [currentFiles, setCurrentFiles] = useState<FileItem[]>([]);
@@ -225,6 +234,11 @@ const Home: React.FC = () => {
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({
+    key: 'lastModified',
+    direction: 'desc' // 默认按时间倒序（最新在前）
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const xhrRefs = useRef<Map<string, XMLHttpRequest>>(new Map());
 
@@ -272,6 +286,13 @@ const Home: React.FC = () => {
     return () => window.removeEventListener("trigger-upload", handleTrigger);
   }, []);
 
+  // 监听导航栏的首页按钮事件
+  useEffect(() => {
+    const handleHome = () => setPath([]);
+    window.addEventListener("navigate-home", handleHome);
+    return () => window.removeEventListener("navigate-home", handleHome);
+  }, []);
+
   useEffect(() => {
     let files = rootFiles;
     for (const folder of path) {
@@ -286,6 +307,31 @@ const Home: React.FC = () => {
     setCurrentFiles(files);
   }, [path, rootFiles]);
 
+  // 排序逻辑
+  const sortedFiles = useMemo(() => {
+    const files = [...currentFiles];
+    return files.sort((a, b) => {
+      // 文件夹始终在最前
+      const aIsFolder = a.type === 'folder';
+      const bIsFolder = b.type === 'folder';
+      if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1;
+
+      let comparison = 0;
+      switch (sortConfig.key) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name, 'zh-CN', { numeric: true });
+          break;
+        case 'size':
+          comparison = (a.size || 0) - (b.size || 0);
+          break;
+        case 'lastModified':
+          comparison = new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime();
+          break;
+      }
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  }, [currentFiles, sortConfig]);
+
   const keyword = search.trim();
   const keywordLower = keyword.toLowerCase();
   const searchResults = useMemo(() => {
@@ -296,12 +342,12 @@ const Home: React.FC = () => {
 
   const visibleNodes = useMemo<FlatNode[]>(() => {
     if (searchResults) return searchResults;
-    return currentFiles.map((file) => ({
+    return sortedFiles.map((file) => ({
       item: file,
       parentPath: path,
       fullPath: [...path, file.name],
     }));
-  }, [currentFiles, path, searchResults]);
+  }, [sortedFiles, path, searchResults]);
 
   const handleCopy = (url: string) => {
     copyToClipboard(url);
@@ -449,6 +495,11 @@ const Home: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  const handleSort = (key: SortKey, direction: SortDirection) => {
+    setSortConfig({ key, direction });
+    setShowSortMenu(false);
+  };
+
   const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -530,6 +581,36 @@ const Home: React.FC = () => {
 
           {/* 搜索框 */}
           <div className="relative w-full md:w-72">
+            {/* 排序按钮 */}
+            <div className="absolute right-0 top-0 h-full flex items-center pr-2">
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortMenu(!showSortMenu)}
+                  className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                  title="排序"
+                >
+                  <SortIcon className="h-4 w-4" />
+                </button>
+                
+                {showSortMenu && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)}></div>
+                    <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-20 text-sm">
+                      <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">排序方式</div>
+                      <button onClick={() => handleSort('lastModified', 'desc')} className={`w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${sortConfig.key === 'lastModified' && sortConfig.direction === 'desc' ? 'text-blue-600 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>时间 (最新)</button>
+                      <button onClick={() => handleSort('lastModified', 'asc')} className={`w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${sortConfig.key === 'lastModified' && sortConfig.direction === 'asc' ? 'text-blue-600 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>时间 (最早)</button>
+                      <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                      <button onClick={() => handleSort('name', 'asc')} className={`w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${sortConfig.key === 'name' && sortConfig.direction === 'asc' ? 'text-blue-600 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>名称 (A-Z)</button>
+                      <button onClick={() => handleSort('name', 'desc')} className={`w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${sortConfig.key === 'name' && sortConfig.direction === 'desc' ? 'text-blue-600 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>名称 (Z-A)</button>
+                      <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                      <button onClick={() => handleSort('size', 'asc')} className={`w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${sortConfig.key === 'size' && sortConfig.direction === 'asc' ? 'text-blue-600 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>大小 (小-大)</button>
+                      <button onClick={() => handleSort('size', 'desc')} className={`w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${sortConfig.key === 'size' && sortConfig.direction === 'desc' ? 'text-blue-600 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>大小 (大-小)</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
                 className="h-5 w-5 text-gray-400"
@@ -546,7 +627,7 @@ const Home: React.FC = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 sm:text-sm transition-all"
+              className="block w-full pl-10 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 sm:text-sm transition-all"
               placeholder="搜索文件..."
             />
           </div>
