@@ -180,11 +180,11 @@ const Home: React.FC = () => {
 
   const fetchFiles = async () => {
     try {
-      const res = await fetch("/files.json", { cache: "no-store" });
+      const res = await fetch("/api/files", { cache: "no-store" });
       const data = await res.json();
       setRootFiles(data);
     } catch (err) {
-      setNotice("加载文件列表失败，请检查 /public/files.json 是否存在且为合法 JSON。");
+      setNotice("加载文件列表失败，请检查 R2 绑定配置。");
       console.error(err);
     }
   };
