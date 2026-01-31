@@ -82,7 +82,7 @@ const getFileIconSvg = (type: string) => {
       </svg>
     );
   }
-  if (type.includes("zip") || type.includes("compressed") || type.includes("tar")) {
+  if (type.includes("zip") || type.includes("compressed") || type.includes("tar") || type.includes("rar")) {
     return (
       <svg viewBox="0 0 24 24" className="h-8 w-8 text-gray-500" fill="currentColor">
         <path fillRule="evenodd" d="M6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3H6Zm1.5 1.5a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 .75.75h1.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75h-1.5ZM6 9.75A.75.75 0 0 1 6.75 9h1.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75v-1.5Zm.75 3.75a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 .75.75h1.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75h-1.5Z" clipRule="evenodd" />
@@ -119,7 +119,7 @@ const getFileMeta = (type: string) => {
   if (type.includes("word") || type.includes("document")) {
     return { label: "Word", tone: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" };
   }
-  if (type.includes("zip") || type.includes("compressed")) {
+  if (type.includes("zip") || type.includes("compressed") || type.includes("tar") || type.includes("rar")) {
     return { label: "压缩包", tone: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300" };
   }
   return { label: "未知", tone: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" };
