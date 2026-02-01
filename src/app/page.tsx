@@ -260,7 +260,6 @@ const Home: React.FC = () => {
   const [copied, setCopied] = useState<string | null>(null);
   const [search, setSearch] = useState<string>("");
   const [notice, setNotice] = useState<string | null>(null);
-  const [isVideoBuffering, setIsVideoBuffering] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -423,9 +422,6 @@ const Home: React.FC = () => {
       return;
     }
     setPreview(file);
-    if (file.type.startsWith("video/")) {
-      setIsVideoBuffering(true);
-    }
   };
 
   const handleClosePreview = () => setPreview(null);
@@ -857,7 +853,7 @@ const Home: React.FC = () => {
       {/* 预览模态框 */}
       {preview && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 md:p-4"
           onClick={handleClosePreview}
         >
           <div
@@ -916,20 +912,11 @@ const Home: React.FC = () => {
                 />
               )}
               {preview.type.startsWith("video/") && (
-                <div className="relative w-auto h-auto max-w-full max-h-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black border border-gray-800 flex items-center justify-center">
-                  {isVideoBuffering && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50 pointer-events-none">
-                      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
+                <div className="relative w-full max-w-5xl mx-auto aspect-video bg-black rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden flex items-center justify-center">
                   <video
                     src={getCustomUrl(preview.url) || ""}
                     controls
                     className="w-full h-full object-contain"
-                    onLoadStart={() => setIsVideoBuffering(true)}
-                    onWaiting={() => setIsVideoBuffering(true)}
-                    onCanPlay={() => setIsVideoBuffering(false)}
-                    onPlaying={() => setIsVideoBuffering(false)}
                   />
                 </div>
               )}
@@ -999,9 +986,6 @@ const Home: React.FC = () => {
               <div className="p-8 flex flex-col gap-6 justify-center items-center bg-white dark:bg-gray-900">
                 <div className="w-full max-w-sm space-y-5">
                   <div className="text-center">
-                    <div className="mx-auto h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-3">
-                      <LockIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">管理员登录</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">请验证身份以继续上传文件</p>
                   </div>
@@ -1174,7 +1158,7 @@ const Home: React.FC = () => {
       )}
 
       {notice && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 animate-fade-in-up">
+        <div className="fixed bottom-6 right-6 z-[200] max-w-sm w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 animate-fade-in-up">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-gray-700 dark:text-gray-200">{notice}</span>
             <button
