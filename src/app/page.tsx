@@ -912,7 +912,10 @@ const Home: React.FC = () => {
                 />
               )}
               {preview.type.startsWith("video/") && (
-                <div className="relative w-full max-w-5xl mx-auto aspect-video bg-black rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden flex items-center justify-center">
+                <div 
+                  className="relative w-full max-w-5xl aspect-video bg-black rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden mx-auto"
+                  style={{ maxHeight: '100%' }}
+                >
                   <video
                     src={getCustomUrl(preview.url) || ""}
                     controls
