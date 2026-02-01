@@ -53,7 +53,7 @@ const getFileIconSvg = (name: string, type: string) => {
   if (type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|flac|aac|wma)$/i.test(lowerName)) {
     return (
       <svg viewBox="0 0 24 24" className="h-8 w-8 text-cyan-500" fill="currentColor">
-        <path d="M19.957 4.297a.75.75 0 0 0-1.207-.594l-10.5 6.562a.75.75 0 0 0-.35.643v9.842a3.75 3.75 0 1 0 1.5 3.15V11.556l9.057-5.66v4.604a3.75 3.75 0 1 0 1.5 3.15V4.297Z" />
+        <path d="M21 3L9 5.5v10.03a3.5 3.5 0 1 0 2 3V8.41l8-1.66v7.78a3.5 3.5 0 1 0 2 3V3z" />
       </svg>
     );
   }
@@ -964,7 +964,7 @@ const Home: React.FC = () => {
                 <div className="w-full max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
                   <div className="flex flex-col items-center gap-4">
                     <div className="h-16 w-16 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center text-cyan-600 dark:text-cyan-400">
-                      <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19.957 4.297a.75.75 0 0 0-1.207-.594l-10.5 6.562a.75.75 0 0 0-.35.643v9.842a3.75 3.75 0 1 0 1.5 3.15V11.556l9.057-5.66v4.604a3.75 3.75 0 1 0 1.5 3.15V4.297Z" /></svg>
+                      <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3L9 5.5v10.03a3.5 3.5 0 1 0 2 3V8.41l8-1.66v7.78a3.5 3.5 0 1 0 2 3V3z" /></svg>
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white text-center break-all">{preview.name}</h3>
                     <audio
