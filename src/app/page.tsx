@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import PlyrVideo from "./components/PlyrVideo";
 
 type FileItem = {
   name: string;
@@ -949,7 +948,16 @@ const Home: React.FC = () => {
                 />
               )}
 	              {(preview.type.startsWith("video/") || /\.(mp4|webm|ogg|mov|mkv|avi|m4v)$/i.test(preview.name.toLowerCase())) && (
-	                <PlyrVideo src={getCustomUrl(preview.url) || ""} title={preview.name} />
+	                <div 
+	                  className="relative w-full max-w-5xl aspect-video bg-black rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.3)] overflow-hidden mx-auto"
+	                  style={{ maxHeight: '100%' }}
+	                >
+	                  <video
+	                    src={getCustomUrl(preview.url) || ""}
+	                    controls
+	                    className="w-full h-full object-contain"
+	                  />
+	                </div>
 	              )}
               {(preview.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|flac|aac|wma)$/i.test(preview.name.toLowerCase())) && (
                 <div className="w-full max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
