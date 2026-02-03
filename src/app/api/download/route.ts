@@ -68,7 +68,10 @@ export async function GET(request: NextRequest) {
   headers.set("Content-Disposition", buildContentDisposition(filename));
   headers.set("Cache-Control", "no-store");
   headers.set("X-Content-Type-Options", "nosniff");
+  const size = (obj as unknown as { size?: number }).size;
+  if (typeof size === "number" && Number.isFinite(size) && size >= 0) {
+    headers.set("Content-Length", String(size));
+  }
 
   return new Response(obj.body, { headers });
 }
-
