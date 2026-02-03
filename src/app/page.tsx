@@ -26,6 +26,14 @@ const getCustomUrl = (url?: string) => {
   }
 };
 
+const getDownloadUrl = (path?: string, filename?: string) => {
+  if (!path) return "";
+  const params = new URLSearchParams();
+  params.set("path", path);
+  if (filename) params.set("filename", filename);
+  return `/api/download?${params.toString()}`;
+};
+
 const getFileIconSvg = (name: string, type: string) => {
   const lowerName = name.toLowerCase();
 
@@ -642,10 +650,10 @@ const Home: React.FC = () => {
 
       <div className="flex-1 w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
         
-        {/* 顶部工具栏：面包屑 + 搜索 */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          {/* 面包屑导航 */}
-          <nav className="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
+	        {/* 顶部工具栏：面包屑 + 搜索 */}
+	        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+	          {/* 面包屑导航 */}
+	          <nav className="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
             <button 
               onClick={() => setPath([])}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1"
@@ -803,8 +811,8 @@ const Home: React.FC = () => {
 
                     {/* 操作按钮 */}
                     <div className="flex items-center justify-end gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                      {file.type !== "folder" && customUrl && (
-                        <>
+	                      {file.type !== "folder" && customUrl && (
+	                        <>
                           <button
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                               copied === customUrl 
@@ -817,13 +825,13 @@ const Home: React.FC = () => {
                             <LinkIcon className="h-4 w-4" />
                             <span className="hidden sm:inline">复制直链</span>
                           </button>
-                          <a
-                            href={customUrl}
-                            download
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
-                            onClick={() => setNotice("正在拉起下载... 🚀")}
-                            title="下载"
-                          >
+	                          <a
+	                            href={getDownloadUrl(file.url, file.name)}
+	                            download={file.name}
+	                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+	                            onClick={() => setNotice("正在拉起下载... 🚀")}
+	                            title="下载"
+	                          >
                             <DownloadIcon className="h-4 w-4" />
                             <span className="hidden sm:inline">下载</span>
                           </a>
@@ -849,28 +857,19 @@ const Home: React.FC = () => {
             
             <div className="hidden md:block w-px h-4 bg-gray-300 dark:bg-gray-700"></div>
             
-            <div className="flex items-center gap-1">
-              <span>Designed by</span>
-              <a 
-                href="https://qinghub.top" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                WanQing
-              </a>
-            </div>
-            
-            <div className="hidden md:block w-px h-4 bg-gray-300 dark:bg-gray-700"></div>
+	            <div className="flex items-center gap-1">
+	              <span>Designed by</span>
+	              <a 
+	                href="https://qinghub.top" 
+	                target="_blank" 
+	                rel="noopener noreferrer"
+	                className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+	              >
+	                WanQing
+	              </a>
+	            </div>
 
-            <div className="flex items-center gap-1">
-              <span>Assisted by</span>
-              <span className="font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
-                Gemini AI
-              </span>
-            </div>
-
-            <div className="hidden md:block w-px h-4 bg-gray-300 dark:bg-gray-700"></div>
+	            <div className="hidden md:block w-px h-4 bg-gray-300 dark:bg-gray-700"></div>
 
             <a
               href="https://github.com/wangqing176176-a11y"
@@ -917,12 +916,12 @@ const Home: React.FC = () => {
                       <LinkIcon className="h-5 w-5" />
                       <span className="hidden sm:inline">复制直链</span>
                     </button>
-                    <a
-                      href={getCustomUrl(preview.url)}
-                      download
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
-                      onClick={() => setNotice("正在拉起下载... 🚀")}
-                    >
+	                    <a
+	                      href={getDownloadUrl(preview.url, preview.name)}
+	                      download={preview.name}
+	                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+	                      onClick={() => setNotice("正在拉起下载... 🚀")}
+	                    >
                       <DownloadIcon className="h-5 w-5" />
                       <span className="hidden sm:inline">下载</span>
                     </a>
@@ -1007,12 +1006,12 @@ const Home: React.FC = () => {
                     </div>
                     <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">无法预览此文件</h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-6">此文件类型暂不支持在线预览，请下载后查看。</p>
-                    <a
-                      href={getCustomUrl(preview.url)}
-                      download
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
-                      onClick={() => setNotice("正在拉起下载... 🚀")}
-                    >
+	                    <a
+	                      href={getDownloadUrl(preview.url, preview.name)}
+	                      download={preview.name}
+	                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+	                      onClick={() => setNotice("正在拉起下载... 🚀")}
+	                    >
                       <DownloadIcon className="h-5 w-5" />
                       下载文件
                     </a>
