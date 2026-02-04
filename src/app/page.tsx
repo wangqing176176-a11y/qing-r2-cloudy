@@ -10,19 +10,23 @@ type FileItem = {
   children?: FileItem[];
 };
 
+const R2_BASE_URL = (process.env.NEXT_PUBLIC_R2_BASE_URL ?? "").trim().replace(/\/+$/, "");
+const ADMIN_USERNAME = (process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? "admin").trim();
+const ADMIN_PASSWORD = (process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "admin").trim();
+
 // 辅助函数：替换域名为自定义域名。
 const getCustomUrl = (url?: string) => {
   if (!url) return "";
+  if (!R2_BASE_URL) return "";
   try {
-    // 如果是完整 URL，尝试替换 hostname
-    const urlObj = new URL(url.startsWith("http") ? url : `https://r2cloud.qinghub.top${url}`);
-    return urlObj.toString();
-  } catch {
-    // 如果是相对路径，直接拼接
-    if (url.startsWith("/")) {
-      return `https://r2cloud.qinghub.top${url}`;
+    const base = new URL(R2_BASE_URL + "/");
+    if (url.startsWith("http")) {
+      const src = new URL(url);
+      return new URL(`${src.pathname}${src.search}${src.hash}`, base).toString();
     }
-    return url;
+    return new URL(url, base).toString();
+  } catch {
+    return "";
   }
 };
 
@@ -332,8 +336,8 @@ const Home: React.FC = () => {
   const xhrRefs = useRef<Map<string, XMLHttpRequest>>(new Map());
 
   const handleLogin = () => {
-    // 简单的前端验证，账号密码均为 admin
-    if (username === "admin" && password === "admin") {
+    // 简单的前端验证（可通过环境变量 NEXT_PUBLIC_ADMIN_USERNAME / NEXT_PUBLIC_ADMIN_PASSWORD 配置）
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       setLoggedIn(true);
       setLoginError('');
       if (rememberMe) {
@@ -463,7 +467,7 @@ const Home: React.FC = () => {
   const handlePreview = (file: FileItem) => {
     if (file.type === "folder") return;
     if (!file.url) {
-      setNotice("当前文件没有可访问的 URL，无法预览。请先配置真实的 R2 链接。");
+      setNotice("当前文件没有可访问的 URL，无法预览。请在 Cloudflare Pages 环境变量中配置 NEXT_PUBLIC_R2_BASE_URL。");
       return;
     }
     setPreview(file);

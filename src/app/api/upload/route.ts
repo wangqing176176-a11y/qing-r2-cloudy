@@ -9,9 +9,15 @@ export async function POST(request: NextRequest) {
   const ctx = getRequestContext();
   const env = ctx?.env;
 
-  if (!env || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY || !env.R2_ACCOUNT_ID) {
+  if (
+    !env ||
+    !env.R2_ACCESS_KEY_ID ||
+    !env.R2_SECRET_ACCESS_KEY ||
+    !env.R2_ACCOUNT_ID ||
+    !env.R2_BUCKET_NAME
+  ) {
     return NextResponse.json(
-      { error: "R2 credentials not configured in environment variables" },
+      { error: "R2 config missing. Please set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME." },
       { status: 500 }
     );
   }
@@ -36,7 +42,7 @@ export async function POST(request: NextRequest) {
     const signedUrl = await getSignedUrl(
       S3,
       new PutObjectCommand({
-        Bucket: "qing-cloud", // 你的存储桶名称
+        Bucket: env.R2_BUCKET_NAME,
         Key: filename,
         ContentType: contentType,
       }),

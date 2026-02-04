@@ -42,18 +42,27 @@
 
 ## 🛠️ 部署与配置 (Deployment & Configuration)
 
-### 1. 准备工作
-*   一个 Cloudflare 账号。
-*   一个 GitHub 账号。
+### 0. 你需要准备什么（小白版）
+*   一个 **Cloudflare 账号**（免费即可）。
+*   一个 **GitHub 账号**（免费即可）。
+*   10 分钟左右的时间。
 
-### 2. Cloudflare R2 配置
-1.  在 Cloudflare Dashboard 中创建一个 R2 存储桶。
-2.  **配置 CORS**（**关键步骤**，否则无法上传）：
-    进入存储桶 -> **Settings** -> **CORS Policy**，添加以下配置：
+---
+
+### 1. 创建 R2 存储桶（Bucket）
+1. 打开 Cloudflare 控制台 → 左侧找到 **R2**。
+2. 点击 **Create bucket**（创建存储桶），随便取一个名字（例如：`my-drive`）。
+
+记下这个桶名，后面要用到：`R2_BUCKET_NAME = 你创建的桶名`
+
+---
+
+### 2. 配置 R2 的 CORS（非常重要，否则上传会失败）
+进入你刚创建的 Bucket → **Settings** → **CORS policy**，粘贴下面这一段（新手推荐先用这个，确保能跑起来）：
     ```json
     [
       {
-        "AllowedOrigins": ["*"], // 生产环境建议修改为你的实际域名
+        "AllowedOrigins": ["*"],
         "AllowedMethods": ["PUT", "GET", "DELETE", "HEAD"],
         "AllowedHeaders": ["*"],
         "ExposeHeaders": ["ETag"],
@@ -61,45 +70,84 @@
       }
     ]
     ```
-3.  **绑定自定义域名**（推荐）：在 **Settings** -> **Public Access** -> **Custom Domains** 中绑定一个域名，用于文件访问。
 
-### 3. 部署到 Cloudflare Pages
-1.  Fork 本仓库到你的 GitHub。
-2.  在 Cloudflare Pages 中创建新项目，连接你的 GitHub 仓库。
-3.  **构建设置 (Build settings)**：
-    *   **Framework preset**: `Next.js`
-    *   **Build command**: `npm run pages:build`
-    *   **Build output directory**: `.vercel/output/static`
-    *   **Compatibility flags**: 添加 `nodejs_compat`
-4.  **环境变量 (Environment variables)**：
-    在 Pages 项目设置中添加以下变量：
-    *   `R2_ACCOUNT_ID`: 你的 Cloudflare Account ID
-    *   `R2_ACCESS_KEY_ID`: 你的 Access Key ID
-    *   `R2_SECRET_ACCESS_KEY`: 你的 Secret Access Key
-5.  **绑定 R2 存储桶**：
-    在 Pages 项目设置 -> **Functions** -> **R2 Bucket Bindings** 中：
-    *   Variable name: `BUCKET` (**必须是这个名字**)
-    *   R2 Bucket: 选择你创建的存储桶
+如果你希望更安全：后面部署成功后，把 `AllowedOrigins` 从 `*` 改成你自己的站点域名（例如：`https://xxx.pages.dev` 或你的自定义域名）。
 
-### 4. 个性化配置
+---
 
-修改 `src/app/page.tsx` 文件中的配置：
+### 3. （推荐）给 R2 文件绑定一个公网访问域名（用于预览/复制链接）
+项目需要一个“文件访问域名”，用来直接访问图片/视频等文件（否则就无法预览，只能下载）。
 
-```typescript
-// 修改管理员账号密码 (约 180 行)
-const handleLogin = () => {
-  if (username === "admin" && password === "admin") { // 修改这里的账号密码
-    // ...
-  }
-}
+在 Bucket → **Settings** → **Public Access** 里：
+1. 开启 Public Access（如果有该选项）。
+2. 在 **Custom Domains** 绑定一个你自己的域名（例如：`https://files.example.com`）。
 
-// 修改自定义域名 (约 15 行)
-const getCustomUrl = (url?: string) => {
-  // 将 https://r2cloud.qinghub.top 替换为你自己的 R2 域名
-  const urlObj = new URL(url.startsWith("http") ? url : `https://your-domain.com${url}`);
-  // ...
-}
-```
+记下这个域名，后面要用到：`NEXT_PUBLIC_R2_BASE_URL = 你的文件访问域名`
+
+---
+
+### 4. 获取 R2 的 Access Key（给程序用的“钥匙”）
+Cloudflare 控制台 → R2 →（通常在右侧或设置里）找到 **Manage R2 API Tokens / Access Keys** 之类的入口：
+1. 创建一个 **Access Key**（建议只授权你这个 bucket）。
+2. 你会得到两项：
+   - `Access Key ID`
+   - `Secret Access Key`
+
+同时你还需要你的 `Account ID`：
+- Cloudflare 控制台首页右侧一般能看到 **Account ID**（或在账号设置里）
+
+---
+
+### 5. 一键部署到 Cloudflare Pages（不用改代码）
+#### 5.1 Fork 仓库
+在 GitHub 打开本项目，点击右上角 **Fork**，把仓库复制到你自己的账号下。
+
+#### 5.2 在 Pages 创建项目
+Cloudflare 控制台 → **Pages** → **Create a project** → 选择 **Connect to GitHub** → 选中你 fork 的仓库。
+
+#### 5.3 配置构建参数（Build settings）
+* **Framework preset**：`Next.js`
+* **Build command**：`npm run pages:build`
+* **Build output directory**：`.vercel/output/static`
+* **Compatibility flags**：添加 `nodejs_compat`
+
+#### 5.4 配置环境变量（Environment variables）
+在 Pages 项目设置里添加下面这些变量（复制粘贴即可）：
+
+| 变量名 | 是否保密 | 示例 | 说明 |
+|---|---:|---|---|
+| `R2_ACCOUNT_ID` | ✅ | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` | Cloudflare Account ID |
+| `R2_ACCESS_KEY_ID` | ✅ | `xxxxxxxxxxxxxxxx` | R2 Access Key ID |
+| `R2_SECRET_ACCESS_KEY` | ✅ | `xxxxxxxxxxxxxxxxxxxxxxxx` | R2 Secret Access Key |
+| `R2_BUCKET_NAME` | ❌ | `my-drive` | 你的 R2 Bucket 名称 |
+| `NEXT_PUBLIC_R2_BASE_URL` | ❌ | `https://files.example.com` | 你的 R2 文件访问域名（用于预览/复制链接） |
+| `NEXT_PUBLIC_ADMIN_USERNAME` | ❌ | `admin` | 管理员账号（前端校验） |
+| `NEXT_PUBLIC_ADMIN_PASSWORD` | ❌ | `change-me` | 管理员密码（前端校验） |
+
+> 重要提醒：`NEXT_PUBLIC_*` 会出现在浏览器端（任何人都能看到）。它只用于“简单的前端挡一下”。如果你希望真正的访问控制，推荐使用 Cloudflare Access/Zero Trust 保护整个站点。
+
+#### 5.5 绑定 R2 存储桶（必须做，否则无法列出文件）
+Pages 项目设置 → **Functions** → **R2 Bucket Bindings**：
+* **Variable name**：`BUCKET`（必须是这个名字）
+* **R2 Bucket**：选择你创建的存储桶（要和 `R2_BUCKET_NAME` 填同一个桶）
+
+#### 5.6 部署
+保存设置后触发一次部署，等待 Pages 构建完成，打开你的站点地址即可使用。
+
+---
+
+## ✅ 常见问题（小白排查）
+### 1) 能打开页面，但看不到文件列表
+检查 Pages 里是否做了：**Functions → R2 Bucket Bindings → Variable name = `BUCKET`** 并且选择了你的 bucket。
+
+### 2) 上传失败 / 显示网络错误
+99% 是 R2 CORS 没配置好。回到 Bucket → Settings → CORS policy，先按本文的 `AllowedOrigins: ["*"]` 配好再试。
+
+### 3) 能下载但不能预览、复制链接是空的
+需要设置 `NEXT_PUBLIC_R2_BASE_URL`，并确保你的 R2 文件可以通过这个域名直接访问。
+
+### 4) 忘记管理员密码怎么办？
+到 Pages 项目设置里修改 `NEXT_PUBLIC_ADMIN_PASSWORD` 重新部署即可。
 
 ## 🤝 致谢 (Credits)
 

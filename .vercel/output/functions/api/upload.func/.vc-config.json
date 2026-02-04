@@ -1,6 +1,6 @@
 {
   "runtime": "edge",
-  "name": "api/files",
+  "name": "api/upload",
   "deploymentTarget": "v8-worker",
   "entrypoint": "index.js",
   "assets": [],
