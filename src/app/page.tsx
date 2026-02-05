@@ -492,7 +492,7 @@ const Home: React.FC = () => {
   const handlePreview = async (file: FileItem) => {
     if (file.type === "folder") return;
     try {
-      const url = await resolveObjectUrl(file, false);
+      const url = await resolveObjectUrl(file, false, { direct: true });
       setPreview({ ...file, url });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);

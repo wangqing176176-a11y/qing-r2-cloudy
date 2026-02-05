@@ -13,6 +13,12 @@ const buildDirectRedirectUrl = (origin: string, key: string, filename?: string) 
   return `${origin}/api/direct?${params.toString()}`;
 };
 
+const encodeKeyForUrlPath = (key: string) =>
+  key
+    .split("/")
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -24,10 +30,17 @@ export async function GET(req: NextRequest) {
     if (!key) return NextResponse.json({ error: "Missing key" }, { status: 400 });
 
     const publicBaseUrl = getPublicR2BaseUrl();
-    if (direct && download && publicBaseUrl) {
-      // Return a same-origin redirector so the browser can use <a download> reliably,
-      // while the bytes still come directly from R2.
-      const url = buildDirectRedirectUrl(new URL(req.url).origin, key, filename || undefined);
+    if (direct && publicBaseUrl) {
+      const origin = new URL(req.url).origin;
+      if (download) {
+        // Return a same-origin redirector so the browser can use <a download> reliably,
+        // while the bytes still come directly from R2.
+        const url = buildDirectRedirectUrl(origin, key, filename || undefined);
+        return NextResponse.json({ url }, { headers: { "Cache-Control": "no-store" } });
+      }
+
+      // Preview: return a direct public URL (fast + stable + total size available).
+      const url = `${publicBaseUrl}/${encodeKeyForUrlPath(key)}`;
       return NextResponse.json({ url }, { headers: { "Cache-Control": "no-store" } });
     }
 
