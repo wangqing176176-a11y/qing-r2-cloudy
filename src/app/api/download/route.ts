@@ -39,6 +39,7 @@ const buildPublicR2ObjectUrl = (baseUrl: string, key: string, filename: string |
   if (download) {
     const suggested = filename || key.split("/").pop() || "download";
     u.searchParams.set("response-content-disposition", buildContentDisposition("attachment", suggested));
+    u.searchParams.set("response-content-type", "application/octet-stream");
   }
 
   return u.toString();

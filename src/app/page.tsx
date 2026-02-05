@@ -11,6 +11,17 @@ type FileItem = {
   children?: FileItem[];
 };
 
+const triggerBrowserDownload = (url: string, filename?: string) => {
+  const a = document.createElement("a");
+  a.href = url;
+  if (filename) a.download = filename;
+  a.rel = "noopener noreferrer";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
 const buildDownloadRequestUrl = (key: string, filename?: string, download?: boolean, direct?: boolean) => {
   const params = new URLSearchParams();
   params.set("key", key);
@@ -911,7 +922,7 @@ const Home: React.FC = () => {
                             onClick={async () => {
                               try {
                                 const url = await resolveObjectUrl(file, true, { direct: true });
-                                window.location.href = url;
+                                triggerBrowserDownload(url, file.name);
                               } catch (e) {
                                 const msg = e instanceof Error ? e.message : String(e);
                                 setNotice(`下载失败: ${msg}`);
@@ -1015,12 +1026,12 @@ const Home: React.FC = () => {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                       onClick={async () => {
                         try {
-                        const url = await resolveObjectUrl(preview, true, { direct: true });
-                        window.location.href = url;
-                      } catch (e) {
-                        const msg = e instanceof Error ? e.message : String(e);
-                        setNotice(`下载失败: ${msg}`);
-                      }
+	                        const url = await resolveObjectUrl(preview, true, { direct: true });
+	                        triggerBrowserDownload(url, preview.name);
+	                      } catch (e) {
+	                        const msg = e instanceof Error ? e.message : String(e);
+	                        setNotice(`下载失败: ${msg}`);
+	                      }
                       }}
                     >
                       <DownloadIcon className="h-5 w-5" />
@@ -1112,7 +1123,7 @@ const Home: React.FC = () => {
                       onClick={async () => {
                         try {
                           const url = await resolveObjectUrl(preview, true, { direct: true });
-                          window.location.href = url;
+                          triggerBrowserDownload(url, preview.name);
                         } catch (e) {
                           const msg = e instanceof Error ? e.message : String(e);
                           setNotice(`下载失败: ${msg}`);
