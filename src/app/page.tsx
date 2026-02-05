@@ -11,11 +11,12 @@ type FileItem = {
   children?: FileItem[];
 };
 
-const buildDownloadRequestUrl = (key: string, filename?: string, download?: boolean) => {
+const buildDownloadRequestUrl = (key: string, filename?: string, download?: boolean, direct?: boolean) => {
   const params = new URLSearchParams();
   params.set("key", key);
   if (download) params.set("download", "1");
   if (filename) params.set("filename", filename);
+  if (direct) params.set("direct", "1");
   return `/api/download?${params.toString()}`;
 };
 
@@ -468,9 +469,9 @@ const Home: React.FC = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const resolveObjectUrl = async (file: FileItem, download: boolean) => {
+  const resolveObjectUrl = async (file: FileItem, download: boolean, opts?: { direct?: boolean }) => {
     if (!file.key) throw new Error('Missing file key');
-    const res = await fetchWithAuth(buildDownloadRequestUrl(file.key, file.name, download));
+    const res = await fetchWithAuth(buildDownloadRequestUrl(file.key, file.name, download, opts?.direct));
     const data = await res.json().catch(() => ({}));
     if (res.status === 401) throw new Error('Unauthorized');
     if (!res.ok || !data.url) throw new Error(data.error || 'Failed to get url');
@@ -909,7 +910,7 @@ const Home: React.FC = () => {
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                             onClick={async () => {
                               try {
-                                const url = await resolveObjectUrl(file, true);
+                                const url = await resolveObjectUrl(file, true, { direct: true });
                                 window.location.href = url;
                               } catch (e) {
                                 const msg = e instanceof Error ? e.message : String(e);
@@ -1014,12 +1015,12 @@ const Home: React.FC = () => {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                       onClick={async () => {
                         try {
-                          const url = await resolveObjectUrl(preview, true);
-                          window.location.href = url;
-                        } catch (e) {
-                          const msg = e instanceof Error ? e.message : String(e);
-                          setNotice(`下载失败: ${msg}`);
-                        }
+                        const url = await resolveObjectUrl(preview, true, { direct: true });
+                        window.location.href = url;
+                      } catch (e) {
+                        const msg = e instanceof Error ? e.message : String(e);
+                        setNotice(`下载失败: ${msg}`);
+                      }
                       }}
                     >
                       <DownloadIcon className="h-5 w-5" />
@@ -1110,7 +1111,7 @@ const Home: React.FC = () => {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                       onClick={async () => {
                         try {
-                          const url = await resolveObjectUrl(preview, true);
+                          const url = await resolveObjectUrl(preview, true, { direct: true });
                           window.location.href = url;
                         } catch (e) {
                           const msg = e instanceof Error ? e.message : String(e);

@@ -46,6 +46,7 @@ Pages → Settings → Environment variables：
 | `ADMIN_USERNAME` | Text | 管理员账号（用于上传登录） |
 | `ADMIN_PASSWORD` | Secret | 管理员密码（用于上传登录） |
 | `ADMIN_TOKEN_SECRET` | Secret（可选） | 分享/预览/上传链接 token 的签名密钥；不设置时会回退使用 `ADMIN_PASSWORD` |
+| `PUBLIC_R2_BASE_URL` | Text（可选） | R2 公共访问基础 URL（自定义域名或 `r2.dev`），启用后“下载”按钮会直连 R2（更快、浏览器可显示总大小） |
 
 > 说明：本项目通过 **R2 Binding** 直接访问桶，不需要 `R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`Account ID`，也不需要给桶配置 CORS。
 

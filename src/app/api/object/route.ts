@@ -52,7 +52,8 @@ const encodeRFC5987ValueChars = (value: string) =>
 
 const toAsciiFallbackFilename = (value: string) => {
   const cleaned = sanitizeHeaderValue(value).replace(/[/\\"]/g, "_");
-  return cleaned.slice(0, 180) || "download";
+  const ascii = cleaned.replace(/[^\x20-\x7E]/g, "_");
+  return ascii.slice(0, 180) || "download";
 };
 
 const buildContentDisposition = (disposition: "attachment" | "inline", filename: string) => {

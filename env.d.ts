@@ -4,6 +4,7 @@ interface CloudflareEnv {
   ADMIN_USERNAME?: string;
   ADMIN_PASSWORD?: string;
   ADMIN_TOKEN_SECRET?: string;
+  PUBLIC_R2_BASE_URL?: string;
 }
 
 // Extend Next.js Edge Runtime types
@@ -14,5 +15,6 @@ declare global {
     ADMIN_USERNAME?: string;
     ADMIN_PASSWORD?: string;
     ADMIN_TOKEN_SECRET?: string;
+    PUBLIC_R2_BASE_URL?: string;
   }
 }

@@ -22,7 +22,7 @@ export type R2HttpMetadataLike = {
 
 export type R2GetResultLike = {
   body: BodyInit | null;
-  size?: number;
+  size?: number | bigint;
   etag?: string;
   httpEtag?: string;
   httpMetadata?: R2HttpMetadataLike;
@@ -42,7 +42,7 @@ export type R2MultipartUploadLike = {
 export type R2BucketLike = {
   list: (options: { prefix?: string; delimiter?: string; cursor?: string; limit?: number }) => Promise<unknown>;
   get: (key: string, options?: { range?: { offset: number; length: number } }) => Promise<R2GetResultLike | null>;
-  head: (key: string) => Promise<{ size?: number; etag?: string } | null>;
+  head: (key: string) => Promise<{ size?: number | bigint; etag?: string } | null>;
   put: (key: string, value: unknown, options?: Record<string, unknown>) => Promise<{ etag?: string } | undefined>;
   delete: (keyOrKeys: string | string[]) => Promise<unknown>;
   createMultipartUpload?: (key: string, options?: Record<string, unknown>) => Promise<{ uploadId: string }>;
@@ -66,6 +66,23 @@ export const getAdminUsername = (): string | null => {
   const env = getEnv();
   const u = (env["ADMIN_USERNAME"] as string | undefined | null) ?? null;
   return u && String(u).length ? String(u) : null;
+};
+
+export const getPublicR2BaseUrl = (): string | null => {
+  const env = getEnv();
+  const raw = (env["PUBLIC_R2_BASE_URL"] as string | undefined | null) ?? null;
+  const v = raw ? String(raw).trim() : "";
+  if (!v) return null;
+  try {
+    const u = new URL(v);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    u.hash = "";
+    u.search = "";
+    const basePath = u.pathname.replace(/\/+$/, "");
+    return `${u.origin}${basePath}`;
+  } catch {
+    return null;
+  }
 };
 
 const getTokenSecret = (): string | null => {
