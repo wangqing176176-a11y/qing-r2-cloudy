@@ -8,6 +8,43 @@ const DOWNLOAD_BUFFER_MAX_BYTES = 32 * 1024 * 1024; // 32MiB
 
 const sanitizeHeaderValue = (value: string) => value.replaceAll("\n", " ").replaceAll("\r", " ").trim();
 
+const MAX_SAFE_INTEGER_DEC = "9007199254740991";
+
+const isPositiveDecimalString = (s: string) => /^\d+$/.test(s) && s !== "0";
+
+const lteMaxSafeIntegerDecimal = (s: string) => {
+  // assumes s is positive decimal without leading sign
+  if (s.length < MAX_SAFE_INTEGER_DEC.length) return true;
+  if (s.length > MAX_SAFE_INTEGER_DEC.length) return false;
+  return s <= MAX_SAFE_INTEGER_DEC;
+};
+
+const toLengthHeaderValue = (value: unknown): string | null => {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value) || value <= 0) return null;
+    return String(Math.trunc(value));
+  }
+  if (typeof value === "bigint") {
+    const s = value.toString(10);
+    if (!isPositiveDecimalString(s)) return null;
+    return s;
+  }
+  return null;
+};
+
+const toSafeNumber = (value: unknown): number | null => {
+  if (typeof value === "number") return Number.isFinite(value) && value >= 0 ? value : null;
+  if (typeof value === "bigint") {
+    const s = value.toString(10);
+    if (s.startsWith("-")) return null;
+    if (!/^\d+$/.test(s)) return null;
+    if (!lteMaxSafeIntegerDecimal(s)) return null;
+    const n = Number.parseInt(s, 10);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+};
+
 const encodeRFC5987ValueChars = (value: string) =>
   encodeURIComponent(value)
     .replace(/['()]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
@@ -83,11 +120,12 @@ export async function GET(req: NextRequest) {
     const rangeHeader = req.headers.get("range");
     if (rangeHeader || download) head = await bucket.head(key);
 
-    const totalSize: number | null = head?.size ?? null;
-    const range = parseRange(rangeHeader, totalSize);
+    const totalSizeForRange: number | null = toSafeNumber(head?.size);
+    const totalSizeHeader: string | null = toLengthHeaderValue(head?.size);
+    const range = parseRange(rangeHeader, totalSizeForRange);
 
     const headers = new Headers();
-    headers.set("Cache-Control", "no-store");
+    headers.set("Cache-Control", "no-store, no-transform");
     headers.set("Accept-Ranges", "bytes");
 
     if (download) {
@@ -96,7 +134,7 @@ export async function GET(req: NextRequest) {
 
     if (rangeHeader && !range) {
       // Invalid or unsatisfiable range. Prefer a spec-compliant 416 over silently ignoring it.
-      if (typeof totalSize === "number") headers.set("Content-Range", `bytes */${totalSize}`);
+      if (totalSizeHeader) headers.set("Content-Range", `bytes */${totalSizeHeader}`);
       return new Response("Range Not Satisfiable", { status: 416, headers });
     }
 
@@ -112,7 +150,7 @@ export async function GET(req: NextRequest) {
         headers.set("Content-Disposition", buildContentDisposition("inline", suggestedName));
       }
 
-      if (typeof totalSize === "number") headers.set("Content-Range", `bytes ${range.start}-${range.end}/${totalSize}`);
+      if (totalSizeHeader) headers.set("Content-Range", `bytes ${range.start}-${range.end}/${totalSizeHeader}`);
       headers.set("Content-Length", String(length));
 
       const etag = obj.httpEtag ?? obj.etag;
@@ -131,19 +169,20 @@ export async function GET(req: NextRequest) {
       headers.set("Content-Disposition", buildContentDisposition("inline", suggestedName));
     }
 
-    const size = obj.size ?? head?.size;
-    if (typeof size === "number") headers.set("Content-Length", String(size));
+    const sizeHeader = toLengthHeaderValue(obj.size ?? head?.size) ?? totalSizeHeader;
+    const sizeForBuffer = toSafeNumber(obj.size ?? head?.size);
+    if (sizeHeader) headers.set("Content-Length", sizeHeader);
 
     const etag = obj.httpEtag ?? obj.etag ?? head?.etag;
     if (etag) headers.set("ETag", etag);
 
     // Cloudflare may strip Content-Length for streamed 200 responses. For small downloads, buffer to ensure
     // a fixed-length 200 so Chrome can show total size and avoid silently saving truncated files.
-    if (download && !rangeHeader && typeof size === "number" && size > 0 && size <= DOWNLOAD_BUFFER_MAX_BYTES) {
+    if (download && !rangeHeader && typeof sizeForBuffer === "number" && sizeForBuffer > 0 && sizeForBuffer <= DOWNLOAD_BUFFER_MAX_BYTES) {
       const body = obj.body;
       if (!body) return new Response("Not found", { status: 404 });
       const buf = await new Response(body).arrayBuffer();
-      if (typeof size === "number" && buf.byteLength !== size) {
+      if (buf.byteLength !== sizeForBuffer) {
         return new Response("Upstream truncated", { status: 502, headers });
       }
       headers.set("Content-Length", String(buf.byteLength));
