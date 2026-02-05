@@ -4,7 +4,12 @@ import { hasTokenSecret, verifyAccessToken, getBucket } from "@/lib/cf";
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
-const DOWNLOAD_BUFFER_MAX_BYTES = 32 * 1024 * 1024; // 32MiB
+// If Cloudflare strips `Content-Length` for streamed 200 responses, some browsers may treat a premature
+// connection close as a "successful" download and save a truncated file. Buffering ensures a fixed-length
+// 200 with a reliable `Content-Length`, at the cost of memory.
+//
+// Keep this conservative to avoid memory pressure on concurrent downloads.
+const DOWNLOAD_BUFFER_MAX_BYTES = 96 * 1024 * 1024; // 96MiB
 
 const sanitizeHeaderValue = (value: string) => value.replaceAll("\n", " ").replaceAll("\r", " ").trim();
 
@@ -94,6 +99,63 @@ const parseRange = (rangeHeader: string | null, totalSize: number | null) => {
   if (!Number.isFinite(end) || end < start) return null;
   return { start, end };
 };
+
+export async function HEAD(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const key = (searchParams.get("key") ?? searchParams.get("path") ?? "").trim();
+    const download = searchParams.get("download") === "1";
+    const filename = searchParams.get("filename");
+
+    if (!key) return new Response(null, { status: 400 });
+
+    const suggestedName = sanitizeHeaderValue(filename || key.split("/").pop() || "download");
+
+    const payload = `object\n${key}\n${download ? "1" : "0"}`;
+    if (hasTokenSecret()) {
+      const token = searchParams.get("token") ?? "";
+      if (!token || !(await verifyAccessToken(payload, token))) {
+        return new Response(null, { status: 401 });
+      }
+    }
+
+    const bucket = getBucket();
+    const head = await bucket.head(key);
+    if (!head) return new Response(null, { status: 404 });
+
+    const totalSizeForRange: number | null = toSafeNumber(head?.size);
+    const totalSizeHeader: string | null = toLengthHeaderValue(head?.size);
+    const rangeHeader = req.headers.get("range");
+    const range = parseRange(rangeHeader, totalSizeForRange);
+
+    const headers = new Headers();
+    headers.set("Cache-Control", "no-store, no-transform");
+    headers.set("Accept-Ranges", "bytes");
+    if (download) headers.set("Content-Disposition", buildContentDisposition("attachment", suggestedName));
+
+    if (rangeHeader && !range) {
+      if (totalSizeHeader) headers.set("Content-Range", `bytes */${totalSizeHeader}`);
+      return new Response(null, { status: 416, headers });
+    }
+
+    if (range) {
+      const length = range.end - range.start + 1;
+      if (totalSizeHeader) headers.set("Content-Range", `bytes ${range.start}-${range.end}/${totalSizeHeader}`);
+      headers.set("Content-Length", String(length));
+      const etag = head?.etag;
+      if (etag) headers.set("ETag", etag);
+      return new Response(null, { status: 206, headers });
+    }
+
+    if (totalSizeHeader) headers.set("Content-Length", totalSizeHeader);
+    const etag = head?.etag;
+    if (etag) headers.set("ETag", etag);
+    return new Response(null, { status: 200, headers });
+  } catch (error: unknown) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 500;
+    return new Response(null, { status });
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {

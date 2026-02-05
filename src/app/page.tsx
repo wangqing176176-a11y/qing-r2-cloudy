@@ -23,14 +23,6 @@ const triggerBrowserDownload = (url: string, filename?: string) => {
   a.remove();
 };
 
-const shouldForceProxyDownload = (file: Pick<FileItem, "name" | "type">) => {
-  const t = file.type || "";
-  const lowerName = (file.name || "").toLowerCase();
-  if (t.startsWith("video/") || t.startsWith("audio/") || t.startsWith("image/") || t === "application/pdf") return true;
-  if (/\.(mp4|webm|ogg|mov|mkv|avi|m4v|mp3|wav|m4a|flac|aac|jpg|jpeg|png|gif|webp|svg|pdf)$/i.test(lowerName)) return true;
-  return false;
-};
-
 const buildDownloadRequestUrl = (key: string, filename?: string, download?: boolean, direct?: boolean) => {
   const params = new URLSearchParams();
   params.set("key", key);
@@ -930,8 +922,7 @@ const Home: React.FC = () => {
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                             onClick={async () => {
                               try {
-                                const direct = !shouldForceProxyDownload(file);
-                                const url = await resolveObjectUrl(file, true, { direct });
+                                const url = await resolveObjectUrl(file, true, { direct: true });
                                 triggerBrowserDownload(url, file.name);
                               } catch (e) {
                                 const msg = e instanceof Error ? e.message : String(e);
@@ -1036,8 +1027,7 @@ const Home: React.FC = () => {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
 	                      onClick={async () => {
 	                        try {
-	                        const direct = !shouldForceProxyDownload(preview);
-	                        const url = await resolveObjectUrl(preview, true, { direct });
+	                        const url = await resolveObjectUrl(preview, true, { direct: true });
 	                        triggerBrowserDownload(url, preview.name);
 	                      } catch (e) {
 	                        const msg = e instanceof Error ? e.message : String(e);
@@ -1133,8 +1123,7 @@ const Home: React.FC = () => {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
 	                      onClick={async () => {
 	                        try {
-	                          const direct = !shouldForceProxyDownload(preview);
-	                          const url = await resolveObjectUrl(preview, true, { direct });
+	                          const url = await resolveObjectUrl(preview, true, { direct: true });
 	                          triggerBrowserDownload(url, preview.name);
 	                        } catch (e) {
 	                          const msg = e instanceof Error ? e.message : String(e);
