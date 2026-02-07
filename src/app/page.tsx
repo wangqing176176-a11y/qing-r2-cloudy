@@ -823,10 +823,11 @@ const Home: React.FC = () => {
         {/* 文件列表区域 */}
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
           {/* 列表表头 */}
-          <div className="hidden md:grid grid-cols-[minmax(0,3fr)_1fr_1fr_1.5fr] gap-4 px-6 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            <div>文件名</div>
-            <div>修改时间</div>
-            <div>大小</div>
+          <div className="flex items-center justify-between md:grid md:grid-cols-[minmax(0,3fr)_1fr_1fr_1.5fr] gap-4 px-4 md:px-6 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="md:hidden">文件信息</div>
+            <div className="hidden md:block">文件名</div>
+            <div className="hidden md:block">修改时间</div>
+            <div className="hidden md:block">大小</div>
             <div className="text-right">操作</div>
           </div>
 
@@ -1131,7 +1132,7 @@ const Home: React.FC = () => {
                       }}
                     >
                       <DownloadIcon className="h-5 w-5" />
-                      <span className="hidden sm:inline">下载</span>
+                      <span>下载</span>
                     </button>
                   </div>
                 )}
