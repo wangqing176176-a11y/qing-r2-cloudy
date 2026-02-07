@@ -1118,7 +1118,7 @@ const Home: React.FC = () => {
                       {getFileIconSvg(preview.name, preview.type)}
                     </div>
                     <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">无法预览此文件</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6">此文件类型暂不支持在线预览，请下载后查看。</p>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">此文件暂不支持预览，请下载后查看。</p>
 	                    <button
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
 	                      onClick={async () => {
