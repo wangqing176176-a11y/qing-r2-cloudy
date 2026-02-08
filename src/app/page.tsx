@@ -1069,7 +1069,7 @@ const Home: React.FC = () => {
 	                  </div>
 	                  <div className="flex-1 w-full min-h-0 flex items-center justify-center">
 	                    <div 
-	                      className={`relative bg-black rounded-lg shadow-lg overflow-hidden ${isVideoVertical ? 'h-full' : 'w-full max-w-6xl'}`}
+	                      className={`relative bg-black rounded-lg shadow-lg overflow-hidden max-w-full max-h-full ${isVideoVertical ? 'h-full w-auto' : 'w-full h-auto md:h-full md:w-auto'}`}
 	                      style={{ aspectRatio: isVideoVertical ? '9/16' : '16/9' }}
 	                    >
 	                    <video
