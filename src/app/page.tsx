@@ -312,6 +312,7 @@ const Home: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isVideoVertical, setIsVideoVertical] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('admin_username') || localStorage.getItem('r2_username');
@@ -494,6 +495,7 @@ const Home: React.FC = () => {
     try {
       const url = await resolveObjectUrl(file, false, { direct: true });
       setPreview({ ...file, url });
+      setIsVideoVertical(false);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setNotice(`预览失败: ${msg}`);
@@ -1065,12 +1067,21 @@ const Home: React.FC = () => {
 	                  <div className="shrink-0 text-sm text-gray-500 dark:text-gray-400 text-center px-4">
 	                    若视频加载失败或播放卡顿，可能是由于网络波动或文件过大，建议刷新页面重试或下载后观看。
 	                  </div>
-	                  <div className="relative w-full max-w-6xl flex-1 min-h-0 bg-black rounded-lg shadow-lg overflow-hidden">
+	                  <div className="flex-1 w-full min-h-0 flex items-center justify-center">
+	                    <div 
+	                      className={`relative bg-black rounded-lg shadow-lg overflow-hidden ${isVideoVertical ? 'h-full' : 'w-full max-w-6xl'}`}
+	                      style={{ aspectRatio: isVideoVertical ? '9/16' : '16/9' }}
+	                    >
 	                    <video
 	                      src={preview.url || ""}
 	                      controls
 	                      className="w-full h-full object-contain"
+	                      onLoadedMetadata={(e) => {
+	                        const { videoWidth, videoHeight } = e.currentTarget;
+	                        setIsVideoVertical(videoHeight > videoWidth);
+	                      }}
 	                    />
+	                    </div>
 	                  </div>
 	                </div>
 	              )}
